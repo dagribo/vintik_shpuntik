@@ -309,7 +309,7 @@ int main()
 	ofstream ofs("output.txt");
 		ofs << setprecision(5) << res << endl;
 	ofs.close();
-	//write_to_file();
+
 
 	return 0;
 }
