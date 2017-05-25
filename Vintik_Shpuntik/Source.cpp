@@ -14,7 +14,7 @@ int N,num=0,vin_r,shpun_r;
 //vector < vector < pair<int, double> > > graph_main(1000);
 vector <pair<pair<int, int>, pair<int, int>>> data_for_graph;
 //vector <pair<pair<int, int>, pair<int, int>>> vec_otr;
-vector <pair<pair<int, int>, pair<int, int>>> vec_help;
+//vector <pair<pair<int, int>, pair<int, int>>> vec_help;
 vector < vector < pair<int, double> > > graph_main(1000);
 pair<int, int> vint, shpun;
 
@@ -118,6 +118,9 @@ double calculate_angle(const pair<int, int> &p1, const pair<int, int> &p2, const
 	if (res == 0)
 		return 90.0;
 	else
+		if (res - 180 < 0.000001)
+			return 90.0;
+		else
 		return res;
 }
 
@@ -133,6 +136,7 @@ void read_from_file()
 		ifs >> x1 >> y1 >> x2 >> y2;
 		data_for_graph.emplace_back(make_pair(x1, y1), make_pair(x2, y2));
 	}
+	//sort(data_for_graph.begin(), data_for_graph.end());
 	ifs >> x1 >> y1 >> x2 >> y2;
 	vint = make_pair(x1, y1);
 	shpun = make_pair(x2, y2);
@@ -143,27 +147,33 @@ void build_graph()
 {
 	bool flag = 0;
 	vector < pair<int, double> > vec_h;
-	
-	//int num = 0;
+	vector <pair<pair<int, int>, pair<int, int>>> otr_graph;
+	vector <pair<pair<int, int>, pair<int, int>>> vec_help;
 
-	for (int i = 0;i < N - 1;++i)
+	//vector < vector < pair<int, double> > > graph_main(1000);
+	//int num = 0;
+	//otr_graph[0] = data_for_graph[1];
+	otr_graph = data_for_graph;
+	for (int i = 0;i < N ;++i)
 	{
 		int x11 = data_for_graph[i].first.first;
 		int y11 = data_for_graph[i].first.second;
 		int x12 = data_for_graph[i].second.first;
 		int y12 = data_for_graph[i].second.second;
-		for (int j = i + 1;j < N;++j)
+		flag = 0;
+		for (int j = 0;j < otr_graph.size();++j)
 		{
-			int x21 = data_for_graph[j].first.first;
-			int y21 = data_for_graph[j].first.second;
-			int x22 = data_for_graph[j].second.first;
-			int y22 = data_for_graph[j].second.second;
-			pair<int, int> p = Cross_Line_main(x11, y11, x12, y12, x21, y21, x22, y22);
+			int x21 = otr_graph[j].first.first;
+			int y21 = otr_graph[j].first.second;
+			int x22 = otr_graph[j].second.first;
+			int y22 = otr_graph[j].second.second;
+			pair<int, int> p = Cross_Line(x11, y11, x12, y12, x21, y21, x22, y22);
 			if (p.first != 12345 && p.second != 12345)
 			{
 				if (x11 == p.first && y11 == p.second || x12 == p.first && y12 == p.second)
 				{
 					pair<pair<int, int>, pair<int, int>> p_h = make_pair(make_pair(x11, y11), make_pair(x12, y12));
+					//otr_graph.emplace_back(p_h);
 					vec_help.emplace_back(p_h);
 					num = num + 1;
 				}
@@ -173,14 +183,19 @@ void build_graph()
 						pair<pair<int, int>, pair<int, int>> p_h2 = make_pair(make_pair(p.first, p.second), make_pair(x12, y12));
 						vec_help.emplace_back(p_h1);
 						vec_help.emplace_back(p_h2);
+
+						otr_graph.emplace_back(p_h1);
+						otr_graph.emplace_back(p_h2);
 						num = num + 1;
+						otr_graph.erase(remove(vec_help.begin(), vec_help.end(), otr_graph[i]), vec_help.end());
 						vec_help.erase(remove(vec_help.begin(), vec_help.end(), data_for_graph[i]), vec_help.end());
 					}
 
-				if (x21 == p.first && y21 == p.second || x22 == p.first && y22 == p.second)
+				/*if (x21 == p.first && y21 == p.second || x22 == p.first && y22 == p.second)
 				{
 					pair<pair<int, int>, pair<int, int>> p_h = make_pair(make_pair(x21, y21), make_pair(x22, y22));
 					vec_help.emplace_back(p_h);
+					//otr_graph.emplace_back(p_h);
 					num = num + 1;
 				}
 				else
@@ -189,9 +204,13 @@ void build_graph()
 					pair<pair<int, int>, pair<int, int>> p_h2 = make_pair(make_pair(p.first, p.second), make_pair(x22, y22));
 					vec_help.emplace_back(p_h1);
 					vec_help.emplace_back(p_h2);
+
+					otr_graph.emplace_back(p_h1);
+					otr_graph.emplace_back(p_h2);
 					num = num + 1;
+					otr_graph.erase(remove(vec_help.begin(), vec_help.end(), otr_graph[j]), vec_help.end());
 					vec_help.erase(remove(vec_help.begin(), vec_help.end(), data_for_graph[j]), vec_help.end());
-				}
+				}*/
 			}
 		}
 	}
@@ -201,15 +220,16 @@ void build_graph()
 	int y12 = data_for_graph[0].second.second;
 	set<pair<pair<int, int>, pair<int, int>>> b(vec_help.begin(), vec_help.end());
 	vector <pair<pair<int, int>, pair<int, int>>> vec_otr(b.begin(), b.end());
+	bool flag1 = 0, flag2 = 0;
 	if (N == 1)
 	{
 		num = 1;
 		vec_otr.emplace_back(make_pair(x11, y11), make_pair(x12, y12));
 	}
-	//cout << num << endl;
 	
+
 	num = vec_otr.size();
-	//cout << num << endl;
+
 	double weight;
 	//graph_main.assign();
 	for (int i = 0;i < num;i++)
@@ -218,10 +238,29 @@ void build_graph()
 		int y11 = vec_otr[i].first.second;
 		int x12 = vec_otr[i].second.first;
 		int y12 = vec_otr[i].second.second;
-		if (((vint.first >= x11 && vint.first <= x12) || (vint.first <= x11 && vint.first >= x12)) && ((vint.second >= y11 && vint.second <= y12) || (vint.second <= y11 && vint.second >= y12)))
+
+		if ((vint.first == x11 && vint.second == y11) || (vint.first == x12 && vint.second == y12))
+		{
+			flag1 = 1;
 			vin_r = i;
-		if (((shpun.first >= x11 && shpun.first <= x12) || (shpun.first <= x11 && shpun.first >= x12)) && ((shpun.second >= y11 && shpun.second <= y12) || (shpun.second <= y11 && shpun.second >= y12)))
+		}
+		else 
+		if (flag1==0 && ((vint.first >= x11 && vint.first <= x12) || (vint.first <= x11 && vint.first >= x12)) && ((vint.second >= y11 && vint.second <= y12) || (vint.second <= y11 && vint.second >= y12)))
+		{
+			//flag1 = 1;
+			vin_r = i;
+		}
+		if ((shpun.first == x11 && shpun.second == y11) || (shpun.first == x12 && shpun.second == y12))
+		{
+			flag2 = 1;
 			shpun_r = i;
+		}
+		else
+		if (flag2==0 && ((shpun.first >= x11 && shpun.first <= x12) || (shpun.first <= x11 && shpun.first >= x12)) && ((shpun.second >= y11 && shpun.second <= y12) || (shpun.second <= y11 && shpun.second >= y12)))
+		{
+			//flag2 = 1;
+			shpun_r = i;
+		}
 		for (int j = 0;j < num;j++)
 		{
 			if (i != j)
@@ -250,8 +289,6 @@ void build_graph()
 		}
 		vec_h.clear();
 	}
-
-
 
 	int t = 0;
 }
@@ -300,6 +337,7 @@ int main()
 		res = -1;
 	else
 		res = deikstra(graph_main);
+	//cout << vin_r << " " << shpun_r << endl;
 	//cout << res << endl;
 	//cout << CrossLine(0, 0, 1, 0, 0, 0, 0, 2).first << " " << CrossLine(0, 0, 1, 0, 0, 0, 0, 2).second << endl;
 //	cout << res.first << " " << res.second << endl;
@@ -309,7 +347,13 @@ int main()
 	ofstream ofs("output.txt");
 		ofs << setprecision(5) << res << endl;
 	ofs.close();
-
+	pair<int, int>p1, p2, p3;
+	p1 = make_pair(-3,0);
+	p2 = make_pair(0, 0);
+	p3 = make_pair(0, 2);
+	double tmp = calculate_angle(p1, p2, p3);
+	//cout << tmp << endl;
+	//calculate_angle(const pair<int, int> &p1, const pair<int, int> &p2, const pair<int, int> &p3)
 
 	return 0;
 }
